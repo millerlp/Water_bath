@@ -4,12 +4,16 @@ uses RS232 serial communication with the water bath to get and set the
 temperature setpoint and to check the current bath temperature. This should work
 with both the basic "digital" model and the "programmable digital" model.
 
+Written under Python 2.7
+
 Created on Jul 21, 2013
 
-@author: millerlp
+@author: Luke Miller
 '''
 import time
-import serial
+import serial # from http://pyserial.sourceforge.net/pyserial.html
+              # beginner's install instructions for Windows here:
+              # http://learn.adafruit.com/arduino-lesson-17-email-sending-movement-detector/installing-python-and-pyserial
 import sys # for user input
 
 # Establish serial communications with the water bath. Cole-Parmer instructions
@@ -101,12 +105,15 @@ if continue_flag:
             time.sleep(5)
             bath.write("RT\r")  # request current bath internal temperature
             response = float(bath.readline())
-            print "Current bath temp: %2.2f" % response
+            sys.stdout.write("\rCurrent bath temp: %2.2fC" % response)
+            sys.stdout.flush()
+            # print "Current bath temp: %2.2f" % response
             # When the bath temperature gets within 0.05 of the target, we're 
             # close enough
             if (abs(init_temp - response) < 0.05):
                 flag = True  # set True to kill while loop
-      
+                sys.stdout.write("\n")
+                sys.stdout.flush()
         # The script will now hold at the initial temperature until the user tells 
         # it to begin ramping the temperature to the target_temp.
         print "****************************************************"
@@ -175,8 +182,11 @@ if continue_flag:
                     final_time = new_time + time_left_s + 60
                     # convert final_time to a human-readable string                
                     final_str = time.strftime("%H:%M", time.localtime(final_time))
-                    print "Current setpoint: %2.2f, finishing at approx. %s" % \
-                        (current_set,final_str)
+                    sys.stdout.write("\rCurrent setpoint: %2.2fC, finishing at approx. %s" % \
+                                     (current_set,final_str))
+                    sys.stdout.flush()
+                    #print "Current setpoint: %2.2f, finishing at approx. %s" % \
+                    #    (current_set,final_str)
                         
             # If the new current_set value is greater than the target_temp, then 
             # the bath has nearly reached the target temp. Make the new setpoint
@@ -187,6 +197,8 @@ if continue_flag:
                 bath.write(command)
                 response = bath.readline() # read line to clear buffer
                 flag = True # set flag True to kill while loop
+                sys.stdout.write("\n")
+                sys.stdout.flush()
                 print "Waiting to reach final temperature"
     # Now hang out and wait for the bath temperature to get close to the final
     # target temperature
