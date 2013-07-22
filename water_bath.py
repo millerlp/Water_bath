@@ -44,20 +44,20 @@ prog = raw_input("Enter 1 or 2: ")
 
 if prog == "1":
     # Get the various temperature parameters from the user
-    init_temp = raw_input("Enter the starting temperature (°C): ")
+    init_temp = raw_input("Enter the starting temperature (C): ")
     init_temp = float(init_temp) # Convert to float
 
-    target_temp = raw_input("Enter the target temperature (°C): ")
+    target_temp = raw_input("Enter the target temperature (C): ")
     target_temp = float(target_temp) # convert to float
     
-    rise_rate = raw_input("Enter temperature rise rate (°C per hour): ")
+    rise_rate = raw_input("Enter temperature rise rate (C per hour): ")
     rise_rate = float(rise_rate)
 
 elif prog == "2":
-    target_temp = raw_input("Enter the target temperature (°C): ")
+    target_temp = raw_input("Enter the target temperature (C): ")
     target_temp = float(target_temp) # convert to float
     
-    rise_rate = raw_input("Enter temp rise rate (°C per hour): ")
+    rise_rate = raw_input("Enter temp rise rate (C per hour): ")
     rise_rate = float(rise_rate)
 
 ################################################################################
