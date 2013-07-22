@@ -37,6 +37,12 @@ try:
     bath.write("SE1\r") # turn on command echo
     response = bath.readline() # always read the response to clear the buffer
     #print "SE0 response: %s" % response
+    bath.write("RT\r")
+    response = float(bath.readline())
+    print "Current bath temperature: %2.2f C" % response
+    bath.write("RS\r")
+    response = float(bath.readline())
+    print "Current bath setpoint: %2.2f C" % response
     continue_flag = True
 except:
     print "++++++++++++++++++++++++++"
@@ -86,7 +92,7 @@ if continue_flag:
         flag = False # set the test flag
 
         while flag != True:
-            print "Setting initial temperature: %2.2f" % init_temp
+            print "Setting initial temperature: %2.2f C" % init_temp
             # Assemble the command to send to the water bath
             command = "SS0" + "%2.2f\r" % init_temp 
             bath.write(command)
@@ -95,7 +101,7 @@ if continue_flag:
             bath.write("RS\r")
             response = float(bath.readline())
             if response == init_temp:
-                print "Setpoint set: %2.2f" % response
+                print "Setpoint set: %2.2f C" % response
                 flag = True  # set True to kill while loop
             
         # Next we need to wait around for the water bath to get to the initial 
@@ -105,7 +111,7 @@ if continue_flag:
             time.sleep(5)
             bath.write("RT\r")  # request current bath internal temperature
             response = float(bath.readline())
-            print "Current bath temp: %2.2f" % response
+            print "Current bath temp: %2.2f C" % response
             # When the bath temperature gets within 0.05 of the target, we're 
             # close enough
             if (abs(init_temp - response) < 0.05):
@@ -178,7 +184,7 @@ if continue_flag:
                     final_time = new_time + time_left_s + 60
                     # convert final_time to a human-readable string                
                     final_str = time.strftime("%H:%M", time.localtime(final_time))
-                    print "Current setpoint: %2.2f, finishing at approx. %s" % \
+                    print "Current setpoint: %2.2f C, finishing at approx. %s" % \
                         (current_set,final_str)
                         
             # If the new current_set value is greater than the target_temp, then 
@@ -198,7 +204,7 @@ if continue_flag:
         time.sleep(1)
         bath.write("RT\r") # Query current bath temperature
         response = float(bath.readline())
-        print "Current temperature: %2.2fC" % response
+        print "Current temperature: %2.2f C" % response
         if (abs(response - target_temp) < 0.05):
             print "**************************************************"
             print "**************************************************"
@@ -206,14 +212,16 @@ if continue_flag:
             print "**************************************************"
             print "**************************************************"
             flag = True
+            time.sleep(2)
     # At this point the water bath should stay at the target_temp setpoint 
     # indefinitely. 
     try: 
         bath.close() # shut down serial connection
         print "Closed serial connection"
+        time.sleep(3)
     except: 
         print "Serial connection failed to close"                  
-       
+        time.sleep(3)
     
     
 
