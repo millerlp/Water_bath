@@ -165,6 +165,7 @@ if continue_flag:
     # In cases where the target_temp is lower than the init_temp, the 
     # rise_rate_m value will need to be a negative number for this to work
     # correctly.
+    decrease_flag = False
     if (target_temp - init_temp) < 0:
         rise_rate_m = rise_rate_m * -1
         decrease_flag = True # This flag will notify the loops below to lower
