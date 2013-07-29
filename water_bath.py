@@ -165,12 +165,14 @@ if continue_flag:
     # In cases where the target_temp is lower than the init_temp, the 
     # rise_rate_m value will need to be a negative number for this to work
     # correctly.
-    decrease_flag = False
+    
     if (target_temp - init_temp) < 0:
         rise_rate_m = rise_rate_m * -1
         decrease_flag = True # This flag will notify the loops below to lower
                              # the temperature instead of raising it.
-        
+    else:
+        decrease_flag = False # The ramp will be an increasing ramp
+            
     prev_time = time.time() # get starting time (in seconds)
     bath.write("RS\r") # get current setpoint
     current_set = float(bath.readline()) # always read response to clear buffer
@@ -185,7 +187,7 @@ if continue_flag:
         new_time = time.time() # get time again
         # Compare new_time to prev_time, if more than 60 seconds have elapsed, 
         # update the setpoint to the next temperature
-        if new_time > prev_time + 60:
+        if new_time > (prev_time + 60):
             prev_time = new_time # update to new time
             current_set = current_set + rise_rate_m # add temp step to setpoint
             if current_set < target_temp and not decrease_flag:
