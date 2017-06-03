@@ -1,0 +1,25 @@
+
+For a quick test, open a python interactive session and try this:
+>>>import serial
+>>>ser = serial.Serial('/dev/ttyUSB0') 
+
+Which would try to open a default 9600 8-N-1 no flow control connection. 
+You may then get the error:
+serial.serialutil.SerialException: [Errno 13] could not open port /dev/ttyUSB0: [Errno 13] Permission denied: '/dev/ttyUSB0'
+
+See here for issues when the python program isn't allowed to connect
+to the ttyUSB0 port:
+https://bugs.launchpad.net/ubuntu/+source/gtkterm/+bug/949597
+
+sudo apt-get remove modemmanager
+ sudo adduser youracct dialout
+ su - youracct
+
+If installed, you can try using minicom to talk to the water bath:
+ minicom -D /dev/ttyUSB0
+
+Some setup options for minicom: https://help.ubuntu.com/community/Minicom
+I also recommend using the Add newline option when running minicom, since 
+the responses from the waterbath aren't all rendered properly as newlines. 
+
+
