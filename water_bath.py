@@ -1,13 +1,13 @@
 '''
-Run a temperature ramp on a Cole-Parmer digital Polystat waterbath (the old blue
-units, not the newer models). 
+Run a temperature ramp on an ANOVA A-series water bath connected
+via RS232 port (via RS232-USB adapter). 
+
 This script uses RS232 serial communication with the water bath to get and set 
-the temperature setpoint and to check the current bath temperature. This should 
-work with both the basic "digital" model and the "programmable digital" model.
+the temperature setpoint and to check the current bath temperature. 
 
 Written under Python 2.7
 
-Created on Jul 21, 2013
+Created on June 3, 2017
 
 @author: Luke Miller
 '''
@@ -17,38 +17,43 @@ import serial # from http://pyserial.sourceforge.net/pyserial.html
               # http://learn.adafruit.com/arduino-lesson-17-email-sending-movement-detector/installing-python-and-pyserial
 import sys # for user input
 
-# Establish serial communications with the water bath. Cole-Parmer instructions
-# recommend 57600 baud, 8-N-1, no flow control. No linefeeds (\n) should be
+# Establish serial communications with the water bath. ANOVA instructions
+# recommend 9600 baud, 8-N-1, no flow control. No linefeeds (\n) should be
 # used in the communications with the water bath, only carriage returns (\r). 
 # Useful commands for the water bath: 
-# RS = get current setpoint temperature
-# RT = get current internal bath temperature
-# SSxxx.xx\r = change bath setpoint (i.e. SS025.50, units of degrees Celsius)
-# SE1 = turn on command echo. It seems counterintuitive, but this seems to be
-#         necessary for this script to run.
 
-# Begin by establishing a serial connection with the bath. The entry COM1 below
+# get temp setting = get current setpoint temperature
+# temp = get current internal bath temperature
+# set temp xxx.xx = change bath setpoint (i.e. set temp 025.50 = 25.5C units of degrees Celsius)
+
+# Begin by establishing a serial connection with the bath. The entry /dev/ttyUSB0 below
 # will need to be changed to suit your specific serial port name. On a Mac this
-# will be something like dev/tty.usbserial-xxxxxxx, on Windows it will be a
-# COM port like COM1. 
+# will be something like /dev/tty.usbserial-xxxxxxx, on Windows it will be a
+# COM port like COM1, on Linux it will be something like /dev/ttyUSB0 
+
+# The ANOVA bath tends to echo back all commands, so the responses have to 
+# be parsed properly to ignore the command + carriage return (\r) that comes
+# back. 
 try: 
     bath = serial.Serial(
-                         'COM1',
-                         baudrate = 57600,
+                         '/dev/ttyUSB0',
+                         baudrate = 9600, # ANOVA water bath wants 8-N-1, no flow control
                          timeout = 1)
     print "***********************************"
     print "Serial connection established on "
     print bath.name # print port info
     print "***********************************"
     time.sleep(2)
-    bath.write("SE1\r") # turn on command echo
-    response = bath.readline() # always read the response to clear the buffer
-    #print "SE0 response: %s" % response
-    bath.write("RT\r")
-    response = float(bath.readline())
+    bath.write("version\r") # Ask for ANOVA firmware version
+    response = bath.readlines() # always read the response to clear the buffer
+    print response[0]
+    bath.write("temp\r") # get current bath temperature
+	# NOTE: the temp response may need more parsing, since it appears 
+	# to come back as ['temp\r 20.10\r']
+    response = float(bath.readlines())
     print "Current bath temperature: %2.2f C" % response
-    bath.write("RS\r")
-    response = float(bath.readline())
+    bath.write("get temp setting\r")
+    response = float(bath.readlines())
     print "Current bath setpoint: %2.2f C" % response
     continue_flag = True
 except:
@@ -102,14 +107,16 @@ if continue_flag:
         while flag != True:
             print "Setting initial temperature: %2.2f C" % init_temp
             # Assemble the command to send to the water bath
-            command = "SS0" + "%2.2f\r" % init_temp 
+            command = "set temp " + "%2.2f\r" % init_temp 
             bath.write(command)
-            response = bath.readline() # always read the response to clear 
+            response = bath.readlines() # always read the response to clear 
                                        # the buffer
             time.sleep(0.01)
             # Now check that the set point worked
-            bath.write("RS\r")
-            response = float(bath.readline())
+            bath.write("get temp setting\r")
+            response = float(bath.readlines())
+		# The response here will need to be parsed to remove the echoed
+		# command. It will look like ['get temp setting\r 21.00\r']
             if response == init_temp:
                 print "Setpoint set: %2.2f C" % response
                 flag = True  # set True to kill while loop
@@ -119,8 +126,10 @@ if continue_flag:
         flag = False # reset test flag
         while flag != True:
             time.sleep(5)
-            bath.write("RT\r")  # request current bath internal temperature
-            response = float(bath.readline())
+            bath.write("temp\r")  # request current bath internal temperature
+            response = float(bath.readlines())
+		# The response needs to be parsed to get the temperature value
+		# format: ['temp\r 20.11\r']
             print "Current bath temp: %2.2f C" % response
             # When the bath temperature gets within 0.05 of the target, we're 
             # close enough
@@ -142,8 +151,8 @@ if continue_flag:
     # above. Query the water bath to find its current setpoint and use that 
     # value as the init_temp
     if prog == "2":
-        bath.write("RS\r") # Query setpoint
-        response = float(bath.readline()) # Read setpoint from bath
+        bath.write("get temp setting\r") # Query setpoint
+        response = float(bath.readlines()) # Read setpoint from bath
         init_temp = response # Set init_temp 
 
     ############################################################################
@@ -174,12 +183,12 @@ if continue_flag:
         decrease_flag = False # The ramp will be an increasing ramp
             
     prev_time = time.time() # get starting time (in seconds)
-    bath.write("RS\r") # get current setpoint
-    current_set = float(bath.readline()) # always read response to clear buffer
+    bath.write("get temp setting\r") # get current setpoint
+    current_set = float(bath.readlines()) # always read response to clear buffer
     current_set = current_set + rise_rate_m # add temp step to current setpoint
-    command = "SS0" + "%2.2f\r" % current_set 
+    command = "set temp " + "%2.2f\r" % current_set 
     bath.write(command) # change set point
-    response = bath.readline()
+    response = bath.readlines()
     
     flag = False # set initial flag
     while flag != True:
@@ -191,9 +200,9 @@ if continue_flag:
             prev_time = new_time # update to new time
             current_set = current_set + rise_rate_m # add temp step to setpoint
             if current_set < target_temp and not decrease_flag:
-                command = "SS0%2.2f\r" % current_set
+                command = "set temp %2.2f\r" % current_set
                 bath.write(command) # update water bath setpoint
-                response = bath.readline()
+                response = bath.readlines()
                 # Calculate remaining temperature to cover
                 temp_left = target_temp - current_set
                 # Calculate remaining time in minutes
@@ -216,17 +225,17 @@ if continue_flag:
                 # this while loop
                 current_set = target_temp # set current_set to the final 
                                           # target_temp
-                command = "SS0%2.2f\r" % current_set
+                command = "set temp %2.2f\r" % current_set
                 bath.write(command)
-                response = bath.readline() # read line to clear buffer
+                response = bath.readlines() # read line to clear buffer
                 flag = True # set flag True to kill while loop
                 print "Waiting to reach final temperature"
             elif current_set > target_temp and decrease_flag:
                 # The temperature should be ramped downward when decrease_flag
                 # is True
-                command = "SS0%2.2f\r" % current_set
+                command = "set temp %2.2f\r" % current_set
                 bath.write(command) # update water bath setpoint
-                response = bath.readline()
+                response = bath.readlines()
                 # Calculate remaining temperature to cover
                 temp_left = target_temp - current_set
                 # Calculate remaining time in minutes
@@ -251,9 +260,9 @@ if continue_flag:
                 # True to kill this while loop 
                 current_set = target_temp # set current_set to the final 
                                           # target_temp
-                command = "SS0%2.2f\r" % current_set
+                command = "set temp %2.2f\r" % current_set
                 bath.write(command)
-                response = bath.readline() # read line to clear buffer
+                response = bath.readlines() # read line to clear buffer
                 flag = True # set flag True to kill while loop
                 print "Waiting to reach final temperature"
                 
@@ -262,8 +271,8 @@ if continue_flag:
     flag = False
     while flag != True:
         time.sleep(1)
-        bath.write("RT\r") # Query current bath temperature
-        response = float(bath.readline())
+        bath.write("temp\r") # Query current bath temperature
+        response = float(bath.readlines())
         print "Current temperature: %2.2f C" % response
         if (abs(response - target_temp) < 0.05):
             print "**************************************************"
