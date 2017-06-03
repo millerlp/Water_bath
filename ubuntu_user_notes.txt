@@ -15,6 +15,10 @@ sudo apt-get remove modemmanager
  sudo adduser youracct dialout
  su - youracct
 
+# Note, after doing the above to add yourself to the dialout group, you need to completely
+# log out of your Ubuntu session (i.e. restart the computer) in order for the changes to take
+# effect.  
+
 If installed, you can try using minicom to talk to the water bath:
  minicom -D /dev/ttyUSB0
 
