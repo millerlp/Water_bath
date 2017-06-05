@@ -8,14 +8,20 @@ Control a Cole-Parmer digital Polystat water bath or an ANOVA A-series water
 bath (added June 2017). 
 
 ## Cole-Parmer Polystat
-For the Cole-Parmer Polystat, this code applies to older
+For the Cole-Parmer Polystat, the code in `water_bath.py` applies to older
  blue Polystat Digital waterbaths that 
 were sold in the 2000's. This doesn't apply to current (2013) models, which use 
 a different command structure.
 
 ## ANOVA A-series
-See the file ANOVA_water_bath.py for example code to run an ANOVA A-series
+See the file `ANOVA_water_bath.py` for example code to run an ANOVA A-series
 digital water bath (http://www.waterbaths.com).
+
+============
+For both types of water baths, you can interface with a computer using an old
+Dsub 9-pin serial cable (RS232) and a USB-Serial adapter. I use a 
+Chipi-X10 cable: http://www.ftdichip.com/Products/Cables/USBRS232.htm with Linux 
+or Windows. 
 
 
 Written under Python 2.7, requires the `pyserial` package along with the built-in 
