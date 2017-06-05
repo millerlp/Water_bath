@@ -1,5 +1,5 @@
 Water_bath
-==========
+----
 
 See http://lukemiller.org/index.php/2013/07/stupid-water-bath-tricks/ for more 
 explanation of this script.
@@ -17,7 +17,7 @@ a different command structure.
 See the file `ANOVA_water_bath.py` for example code to run an ANOVA A-series
 digital water bath (http://www.waterbaths.com).
 
-============
+----
 
 For both types of water baths, you can interface with a computer using an old
 Dsub 9-pin serial cable (RS232) and a USB-Serial adapter. I use a 
