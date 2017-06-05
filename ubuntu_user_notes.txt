@@ -26,4 +26,8 @@ Some setup options for minicom: https://help.ubuntu.com/community/Minicom
 I also recommend using the Add newline option when running minicom, since 
 the responses from the waterbath aren't all rendered properly as newlines. 
 
+To run the water_bath.py program, open a terminal window, navigate to
+the Water_bath directory, and run this command:
+python water_bath.py
+
 
