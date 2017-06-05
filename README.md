@@ -18,6 +18,7 @@ See the file `ANOVA_water_bath.py` for example code to run an ANOVA A-series
 digital water bath (http://www.waterbaths.com).
 
 ============
+
 For both types of water baths, you can interface with a computer using an old
 Dsub 9-pin serial cable (RS232) and a USB-Serial adapter. I use a 
 Chipi-X10 cable: http://www.ftdichip.com/Products/Cables/USBRS232.htm with Linux 
